@@ -1,0 +1,29 @@
+{
+  "name": "wxapp-uploader",
+  "version": "0.0.1",
+  "description": "Auto upload wx app with commit&version info.",
+  "main": "index.js",
+  "bin": {
+    "wxup": "./src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mjl0602/wxapp-uploader.git"
+  },
+  "dependencies": {
+    "commander": "^7.2.0",
+    "miniprogram-ci": "^1.2.3"
+  },
+  "keywords": [
+    "wechat",
+    "js",
+    "node",
+    "images"
+  ],
+  "author": "mjl",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mjl0602/wxapp-uploader/issues"
+  },
+  "homepage": "https://github.com/mjl0602/wxapp-uploader#readme"
+}
