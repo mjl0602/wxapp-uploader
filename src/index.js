@@ -105,17 +105,17 @@ upload
 
     // 运行自定义脚本
     for (const path of content.script || []) {
-      var res = join(process.cwd(), path);
+      var res = require(join(process.cwd(), path));
       if (!res.check) {
         console.log('\n[!错误] 自定义脚本没有发现check方法');
         console.log('自定义脚本需要实现check方法，并返回int值，0-无问题，其他值-出错');
         continue;
       }
-      var output = res.check(content);
-      if (output !== 0) {
-        console.log(`脚本 ${path} 检查通过`)
+      var output = await res.check(content);
+      if (output === 0) {
+        console.log(`脚本 ${path} 检查通过`);
       } else {
-        console.log(`脚本 ${path} 检查未通过`)
+        console.log(`脚本 ${path} 检查未通过`);
         hasError = true;
       }
     }
@@ -126,7 +126,7 @@ upload
       return;
     } else {
       if (args.dry) {
-        console.log('\n检查结束，没有发现问题\n')
+        console.log('\n检查结束，没有发现问题\n');
         return;
       }
       console.log('上传中....')
@@ -148,7 +148,7 @@ upload
     })
     console.log(uploadResult);
   });
-program.addCommand(upload)
+program.addCommand(upload);
 
 
 // 默认的config文件
