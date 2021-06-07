@@ -128,7 +128,7 @@ const defaultConfig = {
     },
     'dist': {
       'path': './dist',
-      'desc': '[${TIME}]${VERSION} ${AUTHOR} ${BRANCH}:${COMMIT}',
+      'desc': '[${VERSION}]${TIME} ${AUTHOR} (${BRANCH}/${COMMIT})',
     },
     'key': {
       'path': './key/#TODO:#.key',
