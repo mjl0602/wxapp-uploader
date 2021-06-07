@@ -33,15 +33,16 @@ upload
     let projectPath = join(process.cwd(), content.config.project.path);
     let keyPath = join(process.cwd(), args.key || content.config.key.path)
     let distPath = join(process.cwd(), args.path || content.config.dist.path);
-    let appid = require(join(distPath, '/project.config.json')).appid;
+    let appid = _v(keyPath.match(/(?<=\.)\S+(?=\.key)/g));
 
     var hasError = false;
 
     // 检查key存在
     if (!fs.existsSync(keyPath)) {
       console.log('==============[需要Key]===============')
-      console.log('注意: upload-key当前不存在，无法进行上传')
+      console.log('错误: upload-key当前不存在，无法进行上传')
       console.log('Key Path: ' + keyPath)
+      console.log('注意: 请不要重命名upload-key，本工具会从文件名截取appid')
       console.log('微信后台: https://mp.weixin.qq.com/')
       console.log('详细说明: https://developers.weixin.qq.com/miniprogram/dev/devtools/ci.html')
       console.log('===================================')
@@ -84,6 +85,8 @@ upload
     descText = descText.replace('${BRANCH}', `${commitInfo.branch}`)
     descText = descText.replace('${COMMIT}', `${commitInfo.commit}`)
 
+    console.log('\nAppId：');
+    console.log(appid);
     console.log('\n生成备注：');
     console.log(descText);
     // 出错就中断上传
@@ -106,13 +109,11 @@ upload
       ignores: ['node_modules/**/*'],
     })
     const uploadResult = await ci.upload({
+      robot: content.robot || 0,
       project: project,
       version: version,
       desc: descText,
-      setting: {
-        es6: false,
-      },
-      onProgressUpdate: (task) => {},
+      setting: content.setting || defaultConfig.setting,
     })
     console.log(uploadResult);
   });
@@ -122,13 +123,24 @@ program.addCommand(upload)
 // 默认的config文件
 const defaultConfig = {
   'author': 'wxapp-uploader',
+  'robot': 0,
+  'setting': {
+    'es6': true,
+    'es7': false,
+    'minify': true,
+    'codeProtect': false,
+    'minifyJS': true,
+    'minifyWXML': true,
+    'minifyWXSS': true,
+    'autoPrefixWXSS': true,
+  },
   'config': {
     'project': {
       'path': './',
     },
     'dist': {
       'path': './dist',
-      'desc': '[${VERSION}]${TIME} ${AUTHOR} (${BRANCH}/${COMMIT})',
+      'desc': '[${VERSION}]${AUTHOR} (${BRANCH}/${COMMIT}) -${TIME}',
     },
     'key': {
       'path': './key/#TODO:#.key',
@@ -138,6 +150,7 @@ const defaultConfig = {
     'files': ['./src/apis/config'],
     'rules': ['timappid == 0', 'getImgPath == 0'],
   }],
+
 }
 
 /// 指令：初始化项目
@@ -220,5 +233,9 @@ function _v(arr, remove) {
 // 简单格式化时间
 function _d(date) {
   var d = new Date(date);
-  return `${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()} ${d.getHours()}:${d.getMinutes()}`
+  return `${d.getFullYear()}.${_p2(d.getMonth()+1)}.${_p2(d.getDate())} ` + `${_p2(d.getHours())}:${_p2(d.getMinutes())}`
+}
+
+function _p2(num) {
+  return `00000${num}`.slice(-2)
 }

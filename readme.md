@@ -14,10 +14,10 @@ $ wxup --help
 $ wxup init
 
 # 检查并上传
-$ wxup upload
+$ wxup upload 1.0.0+2
 
 # 运行项目上传检查
-$ wxup upload --dry
+$ wxup upload 1.0.0+1 --dry
 ```
 
 upload命令其他参数：
