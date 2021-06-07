@@ -52,6 +52,7 @@ upload
       console.log('===================================')
       hasError = true;
     }
+
     // 运行checker，检查上传条件
     for (const checker of content.check) {
       let files = checker.files;
@@ -69,14 +70,22 @@ upload
           var ruleKey = ruleInfoList[0];
           var ruleValue = ruleInfoList[1];
           let value = jsContent[ruleKey];
+          if (ruleKey.indexOf('.') >= 0) {
+            let keys = ruleKey.split('.');
+            let _v = jsContent;
+            for (const k of keys) {
+              _v = _v[k];
+            }
+            value = _v;
+          }
           if (typeof value === "function") {
             value = value();
           }
-          if (value == ruleValue) {
+          if (`${value}` == ruleValue) {
             console.log(`${ruleKey}的值是${ruleValue}, 检查通过`);
           } else {
             hasError = true;
-            console.error(`[!错误] ${ruleKey} 的值错误，应当是 ${ruleValue}，现在是 ${value}`);
+            console.error(`\n[!错误] ${ruleKey} 的值错误，应当是 ${ruleValue}，现在是 ${value}\n`);
           }
         }
       }
@@ -93,6 +102,24 @@ upload
     console.log(appid);
     console.log('\n生成备注：');
     console.log(descText);
+
+    // 运行自定义脚本
+    for (const path of content.script || []) {
+      var res = join(process.cwd(), path);
+      if (!res.check) {
+        console.log('\n[!错误] 自定义脚本没有发现check方法');
+        console.log('自定义脚本需要实现check方法，并返回int值，0-无问题，其他值-出错');
+        continue;
+      }
+      var output = res.check(content);
+      if (output !== 0) {
+        console.log(`脚本 ${path} 检查通过`)
+      } else {
+        console.log(`脚本 ${path} 检查未通过`)
+        hasError = true;
+      }
+    }
+
     // 出错就中断上传
     if (hasError) {
       console.error('\n检查未通过，请查找问题\n');
@@ -150,9 +177,10 @@ const defaultConfig = {
       'path': './key/#TODO:#.key',
     },
   },
+  "script": [],
   'check': [{
     'files': ['./src/apis/config'],
-    'rules': ['timappid == 0', 'getImgPath == 0'],
+    'rules': ['aaa == 0', 'bbb == 0'],
   }],
 
 }
