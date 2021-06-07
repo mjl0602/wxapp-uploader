@@ -179,8 +179,7 @@ program.addCommand(init)
 program.version('0.0.1');
 program
   .option('-k, --key <path>', '指定key的路径')
-  .option('-p, --project <path>', '指定项目产物的路径')
-  .option('-v, --version', '指定上传版本号')
+  .option('-p, --path <path>', '指定项目产物的路径')
   .option('-d, --dry', '测试能否上传')
 
 program.parse(process.argv);
