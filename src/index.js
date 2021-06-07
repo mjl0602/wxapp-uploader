@@ -40,6 +40,7 @@ upload
     // 检查key存在
     if (appid.indexOf('wx') != 0) {
       console.log(`[!错误]APPID好像有问题，当前的APPID: ${appid}`)
+      hasError = true;
     }
     if (!fs.existsSync(keyPath)) {
       console.log('==============[需要Key]===============')
