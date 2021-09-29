@@ -12,27 +12,48 @@ const {
 
 
 /// 指令：上传项目
-const upload = program.command('upload <version>');
+const upload = program.command('upload [version]');
 upload
   .action(async (version, __) => {
     let args = program.opts();
     // 检查已有配置是否存在
     let configPath = join(process.cwd(), '/wx-upload-config.json')
+    let packageJsonPath = join(process.cwd(), '/package.json')
 
     if (!fs.existsSync(configPath)) {
-      console.log('wx-upload-config.json不存在，请运行命令: wxup init')
+      console.log('wx-upload-config.json不存在，请运行命令: wxup init');
+      return;
     }
-    console.error('\n检查上传条件...\n');
+    if (!fs.existsSync(packageJsonPath)) {
+      console.log('package.json不存在，请检查执行路径');
+      return;
+    }
     // 读取当前文件夹配置文件
-    let content = JSON.parse(fs.readFileSync(configPath, {
+    let upSettingConfig = JSON.parse(fs.readFileSync(configPath, {
       encoding: 'utf-8'
     }));
+    let packageJsonConfig = JSON.parse(fs.readFileSync(packageJsonPath, {
+      encoding: 'utf-8'
+    }));
+    if (upSettingConfig.autoReadVersion) {
+      version = packageJsonConfig.version;
+    }
+    if (!version) {
+      console.log('必须指定版本后才能上传');
+      console.log('例如: wxup 0.1.1');
+      console.log('或者在配置中添加: "autoReadVersion":true');
+      return;
+    }
+    console.log('读取到版本: ' + version);
+    console.log('正在准备...');
+    await delay(3000);
+    console.error('\n检查上传条件...\n');
     // 拿到git信息，生成备注
     let commitInfo = await lastCommit();
     // 获取项目产物路径，拿到各个路径，appID
-    let projectPath = join(process.cwd(), content.config.project.path);
-    let keyPath = join(process.cwd(), args.key || content.config.key.path)
-    let distPath = join(process.cwd(), args.path || content.config.dist.path);
+    // let projectPath = join(process.cwd(), upSettingConfig.config.project.path);
+    let keyPath = join(process.cwd(), args.key || upSettingConfig.config.key.path)
+    let distPath = join(process.cwd(), args.path || upSettingConfig.config.dist.path);
     let appid = _v(keyPath.match(/(?<=\.)\S+(?=\.key)/g));
 
     var hasError = false;
@@ -54,7 +75,7 @@ upload
     }
 
     // 运行checker，检查上传条件
-    for (const checker of content.check) {
+    for (const checker of upSettingConfig.check) {
       let files = checker.files;
       let rules = checker.rules;
       for (const rawPath of files) {
@@ -91,7 +112,7 @@ upload
       }
     }
     // 生成Desc
-    let descText = content.config.dist.desc;
+    let descText = upSettingConfig.config.dist.desc;
     descText = descText.replace('${TIME}', `${commitInfo.buildTime}`)
     descText = descText.replace('${VERSION}', version)
     descText = descText.replace('${AUTHOR}', `${commitInfo.author}`)
@@ -104,14 +125,14 @@ upload
     console.log(descText);
 
     // 运行自定义脚本
-    for (const path of content.script || []) {
+    for (const path of upSettingConfig.script || []) {
       var res = require(join(process.cwd(), path));
       if (!res.check) {
         console.log('\n[!错误] 自定义脚本没有发现check方法');
         console.log('自定义脚本需要实现check方法，并返回int值，0-无问题，其他值-出错');
         continue;
       }
-      var output = await res.check(content);
+      var output = await res.check(upSettingConfig);
       if (output === 0) {
         console.log(`脚本 ${path} 检查通过`);
       } else {
@@ -140,11 +161,11 @@ upload
       ignores: ['node_modules/**/*'],
     })
     const uploadResult = await ci.upload({
-      robot: content.robot || 0,
+      robot: upSettingConfig.robot || 0,
       project: project,
       version: version,
       desc: descText,
-      setting: content.setting || defaultConfig.setting,
+      setting: upSettingConfig.setting || defaultConfig.setting,
     })
     console.log(uploadResult);
   });
@@ -154,6 +175,7 @@ program.addCommand(upload);
 // 默认的config文件
 const defaultConfig = {
   'author': 'wxapp-uploader',
+  'autoReadVersion': false,
   'robot': 0,
   'setting': {
     'es6': true,
@@ -221,7 +243,7 @@ init
 program.addCommand(init)
 
 // 设置版本
-program.version('0.0.1');
+program.version('0.0.2');
 program
   .option('-k, --key <path>', '指定key的路径')
   .option('-p, --path <path>', '指定项目产物的路径')
@@ -270,4 +292,8 @@ function _d(date) {
 
 function _p2(num) {
   return `00000${num}`.slice(-2)
+}
+
+function delay(time) {
+  return new Promise((r) => setTimeout(() => r(), time));
 }
