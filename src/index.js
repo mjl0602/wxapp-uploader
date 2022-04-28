@@ -44,6 +44,9 @@ upload
       console.log('或者在配置中添加: "autoReadVersion":true');
       return;
     }
+    if (args.robot != undefined) {
+      upSettingConfig.robot = args.robot
+    }
     console.log('读取到版本: ' + version);
     console.log('正在准备...');
     await delay(3000);
@@ -118,6 +121,7 @@ upload
     descText = descText.replace('${AUTHOR}', `${commitInfo.author}`)
     descText = descText.replace('${BRANCH}', `${commitInfo.branch}`)
     descText = descText.replace('${COMMIT}', `${commitInfo.commit}`)
+    if (args.remark != undefined) descText = descText.replace('${REMARK}', `${args.remark}`)
 
     console.log('\nAppId：');
     console.log(appid);
@@ -219,8 +223,8 @@ init
       fs.writeFileSync(
         configPath,
         JSON.stringify(defaultConfig, void 0, 2), {
-          encoding: 'utf-8'
-        }
+        encoding: 'utf-8'
+      }
       )
       console.log('配置文件创建成功');
     } else {
@@ -248,6 +252,8 @@ program
   .option('-k, --key <path>', '指定key的路径')
   .option('-p, --path <path>', '指定项目产物的路径')
   .option('-d, --dry', '测试能否上传')
+  .option('-r, --robot', '指定CI机器人号')
+  .option('--remark', '指定备注信息')
 
 program.parse(process.argv);
 
@@ -287,7 +293,7 @@ function _v(arr, remove) {
 // 简单格式化时间
 function _d(date) {
   var d = new Date(date);
-  return `${d.getFullYear()}.${_p2(d.getMonth()+1)}.${_p2(d.getDate())} ` + `${_p2(d.getHours())}:${_p2(d.getMinutes())}`
+  return `${d.getFullYear()}.${_p2(d.getMonth() + 1)}.${_p2(d.getDate())} ` + `${_p2(d.getHours())}:${_p2(d.getMinutes())}`
 }
 
 function _p2(num) {
