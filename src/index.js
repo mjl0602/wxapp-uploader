@@ -253,7 +253,7 @@ program
   .option('-p, --path <path>', '指定项目产物的路径')
   .option('-d, --dry', '测试能否上传')
   .option('-r, --robot', '指定CI机器人号')
-  .option('--remark', '指定备注信息')
+  .option('--remark <remark>', '指定备注信息')
 
 program.parse(process.argv);
 
