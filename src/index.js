@@ -247,7 +247,7 @@ init
 program.addCommand(init)
 
 // 设置版本
-program.version('0.0.2');
+program.version('0.2.0');
 program
   .option('-k, --key <path>', '指定key的路径')
   .option('-p, --path <path>', '指定项目产物的路径')
